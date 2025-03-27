@@ -3,13 +3,15 @@ import {getConfigVariable} from "./util.js";
 
 export default class OpenAiService {
     #openAi;
-    #model = "gpt-3.5-turbo-instruct";
+    #model = getConfigVariable("OPENAI_MODEL", "gpt-4o-mini");
 
     constructor() {
         const apiKey = getConfigVariable("OPENAI_API_KEY")
+        const baseUrl = getConfigVariable("OPENAI_BASE_URL", "https://api.openai.com/v1");
 
         const configuration = new Configuration({
-            apiKey
+            apiKey,
+            basePath: baseUrl
         });
 
         this.#openAi = new OpenAIApi(configuration)
@@ -54,9 +56,12 @@ export default class OpenAiService {
     }
 
     #generatePrompt(categories, destinationName, description) {
-        return `Given i want to categorize transactions on my bank account into this categories: ${categories.join(", ")}
-In which category would a transaction from "${destinationName}" with the subject "${description}" fall into?
-Just output the name of the category. Does not have to be a complete sentence.`;
+        return `Try and Categorize the following bank transaction into one of the categories below. The categories are in Swedish.
+
+Categories: ${categories.join(", ")}
+Transaction description: "${description}"
+
+Which category does this transaction belong to? Output only of the category name in plain text without formatting or quotes.`;
     }
 }
 
